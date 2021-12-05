@@ -17,9 +17,11 @@ void Source::initialize()
     sendMessageEvent = new cMessage("sendMessageEvent");
     nbGenMessages = 0;
 
-    avgInterArrivalTime = par("avgInterArrivalTime").intValue();
+    avgInterArrivalTime = par("avgInterArrivalTime").doubleValue();
 
     L = par("L").doubleValue();
+
+        std::uniform_real_distribution<double> distribution(0.0, L);
 
     // trigger handleMessage method
     scheduleAt(simTime(), sendMessageEvent);
@@ -37,7 +39,6 @@ void Source::handleMessage(cMessage *msg)
     ClassMessage *message = new ClassMessage(msgname);
 
     // Assign a class to the message using uniform distribution generator [0, L]
-    std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution(0.0, L);
     message->setPriority(distribution(generator));
 

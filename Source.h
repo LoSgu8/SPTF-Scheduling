@@ -35,6 +35,9 @@ class Source : public cSimpleModule
         int nbGenMessages; // msg counter
         double avgInterArrivalTime;
         double L; // maximum value of the uniform distribution, ned parameter
+
+        std::default_random_engine generator;
+
     protected:
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
