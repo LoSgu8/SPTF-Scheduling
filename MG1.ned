@@ -1,6 +1,7 @@
 simple MG1
 {
-        parameters:
+	parameters:
+        int nbClasses @default2;
         //double avgServiceTime @unit(s);
         @display("i=block/queue;q=queue");
         
@@ -11,6 +12,6 @@ simple MG1
         //@statistic[mm1ServiceTime](title="M/M/1 Service Time";record=vector,timeavg, max;interpolationmode=sample-hold);
     
     gates:
-        input in;
+        input in[nbClasses];
         output out;
 }

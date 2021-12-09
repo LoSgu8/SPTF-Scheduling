@@ -1,9 +1,9 @@
 simple Source
 {
     parameters:
+        @display("i=block/source");
         double L @unit(s);
         double avgInterArrivalTime @unit(s);
-        @display("i=block/source");
     gates:
         output out;
 }
