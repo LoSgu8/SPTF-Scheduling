@@ -16,10 +16,16 @@ class MG1 : public cSimpleModule
         cMessage *endOfServiceMsg; // event that tell that the message has been processed
 
         simsignal_t queueLengthSignal;
-        simsignal_t generalQueueingTimeSignal;
-        simsignal_t conditionalQueueingTimeSignals[10]; // put a limit to the nb of classes
+        simsignal_t generalQueuingTimeSignal;
+        simsignal_t conditionalQueuingTimeSignals[10]; // put a limit to the nb of classes
+        simsignal_t utilizationFactorSignal;
+        simsignal_t responseTimeSignal;
 
         cQueue queue; // list of pkts in the queue
+
+        // variables for UtilizactionFactor statistic
+        simtime_t startTimeForRho; // used to compute utilization factor values, store the time at which the server becomes busy or idle
+        simtime_t totalActiveServerTime; // used to compute utilization factor values, store the total time the server is active (busy)
 
     public:
         MG1();

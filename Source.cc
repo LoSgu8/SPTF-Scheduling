@@ -43,8 +43,8 @@ void Source::handleMessage(cMessage *msg)
     message->setMsgServiceTime(distribution(generator));
     // Assign the msgClass field to the message, it is equal to the index of Source module
     message->setMsgClass(getIndex());
-    // Assign SIMTIME_ZERO to startedQueueing field of the message, it will be changed and used by MG1
-    message->setStartedQueueingAt(SIMTIME_ZERO);
+    // Assign the actual time to startedQueuingAt field of the message
+    message->setStartedQueuingAt(simTime());
 
     // Send it out to the M/G/1 System
     send(message, "out");

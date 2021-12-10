@@ -16,42 +16,46 @@ MG1::~MG1()
 
 void MG1::initialize()
 {
-    char signalName [32];
-    char statisticName[32];
-    int i;
-
     int nbClasses = par("nbClasses").intValue();
 
     endOfServiceMsg = new cMessage("end-service");
     queue.setName("queue");
     queue.setup(&compareFunc);
-    //serverBusy = false; // at start server is empty
 
     //signal registering
     queueLengthSignal = registerSignal("queueLength");
-    generalQueueingTimeSignal = registerSignal("generalQueueingTime");
+    generalQueuingTimeSignal = registerSignal("generalQueuingTime");
+    utilizationFactorSignal = registerSignal("utilizationFactor");
+    responseTimeSignal = registerSignal("responseTime");
 
-    // Setting up the conditionalQueueingTime statistic template
+    // Setting up the conditionalQueuingTime statistic template
+    char signalName [32];
+    char statisticName[32];
+    int i;
     cEnvir* ev = getEnvir();
     cProperty *statisticTemplate =
-            getProperties()->get("statisticTemplate", "conditionalQueueingTimeTemplate");
+            getProperties()->get("statisticTemplate", "conditionalQueuingTimeTemplate");
     for (i=0; i<nbClasses; i++) {
-        sprintf(signalName, "queueingTimeClass:%d", i);
-        conditionalQueueingTimeSignals[i] = registerSignal(signalName);
+        sprintf(signalName, "queuingTimeClass:%d", i);
+        conditionalQueuingTimeSignals[i] = registerSignal(signalName);
 
         char statisticName[32];
-        sprintf(statisticName, "queueingTimeClass:%d", i);
+        sprintf(statisticName, "queuingTimeClass:%d", i);
 
-        ev->addResultRecorders(this, conditionalQueueingTimeSignals[i], statisticName, statisticTemplate);
+        ev->addResultRecorders(this, conditionalQueuingTimeSignals[i], statisticName, statisticTemplate);
     }
 }
 
 void MG1::handleMessage(cMessage *msg)
 {
     ClassMessage *castedmsg;
+
     // --- PACKET IN SERVER HAS BEEN PROCESSED ---
     if (msg->isSelfMessage()) {
         EV << "Completed service of " << msgInServer->getName() << " of class " << msgInServer->getMsgClass() << endl;
+        // STATISTICS
+        //emit its response time
+        emit(responseTimeSignal, simTime() - msgInServer->getStartedQueuingAt());
 
         //Send the processed packet to the sink
         send(msgInServer, "out");
@@ -59,20 +63,28 @@ void MG1::handleMessage(cMessage *msg)
         // start next packet processing if queue not empty
         if (!queue.isEmpty()) {
             msgInServer = (ClassMessage *)queue.pop(); // take top of the queue msg and remove it from queue
-            EV << "Popped out " << msgInServer->getName() << " of class " << msgInServer->getMsgClass() << " after waiting in queue for "<< simTime() - msgInServer->getStartedQueueingAt()<< " seconds." << endl;
+            EV << "Popped out " << msgInServer->getName() << " of class " << msgInServer->getMsgClass() << " after waiting in queue for "<< simTime() - msgInServer->getStartedQueuingAt()<< " seconds." << endl;
             // STATISTICS
             // the queue length has decreased
             emit(queueLengthSignal, queue.getLength());
-            // emit the generalQueueingTimeSignal
-            emit(generalQueueingTimeSignal, simTime() - msgInServer->getStartedQueueingAt() );
-            // emit the conditionalQueueingTimeSignal
-            emit(conditionalQueueingTimeSignals[msgInServer->getMsgClass()], simTime() - msgInServer->getStartedQueueingAt() );
+            // emit the generalQueuingTimeSignal
+            emit(generalQueuingTimeSignal, simTime() - msgInServer->getStartedQueuingAt() );
+            // emit the conditionalQueuingTimeSignal
+            emit(conditionalQueuingTimeSignals[msgInServer->getMsgClass()], simTime() - msgInServer->getStartedQueuingAt() );
 
             //start service
             startPacketService();
         } else { // if the queue is empty -> the server goes idle
-            //server is not busy anymore
+            //server busy --> server idle
             msgInServer = nullptr;
+
+            // STATISTICS
+            // update the totalActiveServerTime value, adding to the previous value the time elapsed from the time the server became busy
+            totalActiveServerTime = totalActiveServerTime + (simTime() - startTimeForRho);
+            // update the startTimeForRho value, store the time at which the server becomes idle
+            startTimeForRho = simTime();
+            // emit UtilizationFactor signal
+            emit(utilizationFactorSignal, totalActiveServerTime / simTime());
 
             //log idle server
             EV << "Empty queue, the server goes IDLE" <<endl;
@@ -82,20 +94,22 @@ void MG1::handleMessage(cMessage *msg)
         // cast the received cMessage into a ModifiedMessage
         castedmsg = check_and_cast<ClassMessage *>(msg);
 
-        if (msgInServer != nullptr) {
-            // STATISTICS
-            // store the simtime_t in which it started queueing
-            castedmsg->setStartedQueueingAt(simTime());
+        if (msgInServer != nullptr) { // the server is busy -> put the received msg in queue
 
             // put the packet in queue
             putPacketInQueue(castedmsg);
 
         }
-        else { //the server is idle -> start service right away
+        else { //the server is idle -> start its service
             // STATITISTICS
-            //emit the generalQueueingTime signal (SIMTIME_ZERO)
-            emit(generalQueueingTimeSignal, SIMTIME_ZERO);
+            // emit the generalQueuingTime signal (SIMTIME_ZERO)
+            emit(generalQueuingTimeSignal, SIMTIME_ZERO);
+            // emit UtilizationFactor signal
+            emit(utilizationFactorSignal, totalActiveServerTime / simTime());
+            // update the startTimeForRho value, store the time at which the server becomes busy
+            startTimeForRho = simTime();
 
+            // server idle --> server busy
             // The packet just received becomes the msgInServer packet and starts its service
             msgInServer = castedmsg;
             startPacketService();
