@@ -16,20 +16,14 @@ class MG1 : public cSimpleModule
         cMessage *endOfServiceMsg; // event that tell that the message has been processed
 
         simsignal_t queueLengthSignal;
-        //simsignal_t mm1ServiceTimeSignal;
+        simsignal_t generalQueueingTimeSignal;
+        simsignal_t conditionalQueueingTimeSignals[10]; // put a limit to the nb of classes
 
         cQueue queue; // list of pkts in the queue
-        //simsignal_t arrivalTime;
-
-        //double avgServiceTime;
-
-        //bool serverBusy; // 1 busy, 0 not busy
 
     public:
         MG1();
         virtual ~MG1();
-        // compareFunc used to define queue, see https://doc.omnetpp.org/omnetpp/api/group__Containers.html#gabeb451b66385c18e01063cb0576ea8a0 and https://doc.omnetpp.org/omnetpp/api/classomnetpp_1_1cQueue.html#a7eae56a84f7da30c84a4b68a96783577
-
 
     protected:
         static int compareFunc(cObject *a, cObject *b);

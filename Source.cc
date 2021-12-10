@@ -21,7 +21,7 @@ void Source::initialize()
 
     L = par("L").doubleValue();
 
-        std::uniform_real_distribution<double> distribution(0.0, L);
+    std::uniform_real_distribution<double> distribution(0.0, L);
 
     // trigger handleMessage method
     scheduleAt(simTime(), sendMessageEvent);
@@ -38,9 +38,13 @@ void Source::handleMessage(cMessage *msg)
     // Generate the packet to be sent to M/G/1 queue module
     ClassMessage *message = new ClassMessage(msgname);
 
-    // Assign a class to the message using uniform distribution generator [0, L]
+    // Generate and assign the Service Time to the message using a uniform distribution generator [0, L]
     std::uniform_real_distribution<double> distribution(0.0, L);
-    message->setPriority(distribution(generator));
+    message->setMsgServiceTime(distribution(generator));
+    // Assign the msgClass field to the message, it is equal to the index of Source module
+    message->setMsgClass(getIndex());
+    // Assign SIMTIME_ZERO to startedQueueing field of the message, it will be changed and used by MG1
+    message->setStartedQueueingAt(SIMTIME_ZERO);
 
     // Send it out to the M/G/1 System
     send(message, "out");
