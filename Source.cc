@@ -23,8 +23,8 @@ void Source::initialize()
 
     std::uniform_real_distribution<double> distribution(0.0, L);
 
-    // trigger handleMessage method
-    scheduleAt(simTime(), sendMessageEvent);
+    // send the first msg according the lambda parameter
+    scheduleAt(simTime()+exponential(avgInterArrivalTime), sendMessageEvent);
 }
 
 void Source::handleMessage(cMessage *msg)
@@ -41,7 +41,7 @@ void Source::handleMessage(cMessage *msg)
     // Generate and assign the Service Time to the message using a uniform distribution generator [0, L]
     std::uniform_real_distribution<double> distribution(0.0, L);
     message->setMsgServiceTime(distribution(generator));
-    // Assign the msgClass field to the message, it is equal to the index of Source module
+    // Assign -1 to msgClass field to the message, it will be changed at by MG1 module at its reception
     message->setMsgClass(getIndex());
     // Assign the actual time to startedQueuingAt field of the message
     message->setStartedQueuingAt(simTime());

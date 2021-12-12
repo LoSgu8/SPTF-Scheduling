@@ -93,7 +93,8 @@ void MG1::handleMessage(cMessage *msg)
     else { // PACKET FROM SOURCE HAS ARRIVED
         // cast the received cMessage into a ModifiedMessage
         castedmsg = check_and_cast<ClassMessage *>(msg);
-
+        // assign its correct class according from which Source module it comes
+        //castedmsg->setMsgClass(castedmsg->getArrivalGate()->getIndex());
         if (msgInServer != nullptr) { // the server is busy -> put the received msg in queue
 
             // put the packet in queue
@@ -133,7 +134,7 @@ void MG1::startPacketService()
 void MG1::putPacketInQueue(ClassMessage *msg) {
     queue.insert(msg); // since the compareFunc has already been binded to the queue, the insertion will be sorted according to the message class
     //log new message in queue
-    EV << msg->getName() << " of class " << msgInServer->getMsgClass() << " enters queue" << endl;
+    EV << msg->getName() << " of class " << msg->getMsgClass() << " enters queue" << endl;
 }
 
 // compareFunc used to define queue,
@@ -141,9 +142,9 @@ void MG1::putPacketInQueue(ClassMessage *msg) {
 int MG1::compareFunc(cObject *a, cObject *b){
     ClassMessage* castedA = check_and_cast<ClassMessage *>(a);
     ClassMessage* castedB =check_and_cast<ClassMessage *>(b);
-    double comparison = castedA->getMsgClass() - castedB->getMsgClass();
+    double comparison = castedA->getMsgServiceTime() - castedB->getMsgServiceTime();
 
-    if ( comparison > 0)
+    if ( comparison > 0 )
         comparison = ceil(comparison);
     else
         comparison = floor(comparison);

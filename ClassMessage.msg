@@ -1,3 +1,4 @@
+// Giacomo Sguotti 10667547 - SPTF
 // ClassMessage.msg
 message ClassMessage {
 	int msgClass; // class assigned to the message, the lower it is the lower is its service time. It is assigned by the source module.
