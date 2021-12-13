@@ -1,13 +1,16 @@
+// Giacomo Sguotti 10667547 - SPTF Scheduling
+// MG1.ned
 simple MG1
 {
 	parameters:
-        int nbClasses @default2;
-
         @display("i=block/queue;q=queue");
+        
+        double L @unit(s);
+        int nbIntervals;
         
         @signal[queueLength](type=int);
         @signal[generalQueuingTime](type=simtime_t);
-        @signal[queuingTimeClass:*](type=simtime_t);
+        @signal[queuingTimeInterval:*](type=simtime_t);
         @signal[utilizationFactor](type=double);
         @signal[responseTime](type=simtime_t);
         
@@ -18,6 +21,6 @@ simple MG1
         @statisticTemplate[conditionalQueuingTimeTemplate](title="Conditional queuing time template of class $namePart1";record=timeavg,max);
     
     gates:
-        input in[nbClasses];
+        input in;
         output out;
 }

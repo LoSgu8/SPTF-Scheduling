@@ -1,23 +1,30 @@
+// Giacomo Sguotti 10667547 - SPTF Scheduling
+// MG1.h
 #ifndef __SPTFSCHEDULING_MG1_H_
 #define __SPTFSCHEDULING_MG1_H_
 
 #include <omnetpp.h>
-#include <ClassMessage_m.h>
+#include <ModifiedMessage_m.h>
+#include <random>
+#include <vector>
 
 using namespace omnetpp;
 
-/**
- * TODO - Generated class
- */
 class MG1 : public cSimpleModule
 {
     private:
-        ClassMessage *msgInServer; //message from source and now in the server
+        ModifiedMessage *msgInServer; //message from source and now in the server
         cMessage *endOfServiceMsg; // event that tell that the message has been processed
+
+        double L; // maximum value of the uniform distribution, ned parameter
+
+        int nbIntervals; // nb of dx intervals
+
+        std::default_random_engine generator;
 
         simsignal_t queueLengthSignal;
         simsignal_t generalQueuingTimeSignal;
-        simsignal_t conditionalQueuingTimeSignals[10]; // put a limit to the nb of classes
+        std::vector<simsignal_t> conditionalQueuingTimeSignals; // it will have nbIntervals elements
         simsignal_t utilizationFactorSignal;
         simsignal_t responseTimeSignal;
 
@@ -36,10 +43,7 @@ class MG1 : public cSimpleModule
         virtual void initialize() override;
         virtual void handleMessage(cMessage *msg) override;
         void startPacketService(); // no parameters are needed since msgInServer is an attribute of MG1 class
-        void putPacketInQueue(ClassMessage *msg);
-
-
-
+        void putPacketInQueue(ModifiedMessage *msg);
 };
 
 #endif

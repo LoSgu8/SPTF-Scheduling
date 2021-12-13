@@ -1,3 +1,5 @@
+// Giacomo Sguotti 10667547 - SPTF Scheduling
+// Source.cc
 #include "Source.h"
 
 Define_Module(Source);
@@ -19,10 +21,6 @@ void Source::initialize()
 
     avgInterArrivalTime = par("avgInterArrivalTime").doubleValue();
 
-    L = par("L").doubleValue();
-
-    std::uniform_real_distribution<double> distribution(0.0, L);
-
     // send the first msg according the lambda parameter
     scheduleAt(simTime()+exponential(avgInterArrivalTime), sendMessageEvent);
 }
@@ -36,15 +34,7 @@ void Source::handleMessage(cMessage *msg)
     sprintf(msgname, "message-%d", ++nbGenMessages);
 
     // Generate the packet to be sent to M/G/1 queue module
-    ClassMessage *message = new ClassMessage(msgname);
-
-    // Generate and assign the Service Time to the message using a uniform distribution generator [0, L]
-    std::uniform_real_distribution<double> distribution(0.0, L);
-    message->setMsgServiceTime(distribution(generator));
-    // Assign -1 to msgClass field to the message, it will be changed at by MG1 module at its reception
-    message->setMsgClass(getIndex());
-    // Assign the actual time to startedQueuingAt field of the message
-    message->setStartedQueuingAt(simTime());
+    ModifiedMessage *message = new ModifiedMessage(msgname);
 
     // Send it out to the M/G/1 System
     send(message, "out");

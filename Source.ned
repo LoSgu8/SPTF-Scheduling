@@ -1,8 +1,9 @@
+// Giacomo Sguotti 10667547 - SPTF Scheduling
+// Source.ned
 simple Source
 {
     parameters:
         @display("i=block/source");
-        double L @unit(s);
         double avgInterArrivalTime @unit(s);
     gates:
         output out;

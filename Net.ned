@@ -1,16 +1,16 @@
+// Giacomo Sguotti 10667547 - SPTF Scheduling
+// Net.ned
 network Net
 {
     submodules:
         mg1: MG1 {
             @display("p=176,79");
         }
-        source1[mg1.nbClasses]: Source;
+        source1: Source;
         sink1: Sink {
             @display("p=306,79");
         }
     connections:
-        for i=0..mg1.nbClasses-1 {
-            source1[i].out --> mg1.in[i];
-        }
+		source1.out --> mg1.in;
         mg1.out --> sink1.in;
 }
