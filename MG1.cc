@@ -44,14 +44,15 @@ void MG1::initialize()
     cEnvir* ev = getEnvir();
     cProperty *statisticTemplate =
             getProperties()->get("statisticTemplate", "conditionalQueuingTimeTemplate");
-    for (i=0; nbIntervals; i++) {
+    for (i=0; i<nbIntervals; i++) {
         sprintf(signalName, "queuingTimeInterval:%d", i);
         conditionalQueuingTimeSignals.push_back(registerSignal(signalName));
+        //conditionalQueuingTimeSignals[i] = registerSignal(signalName);
 
-        char statisticName[32];
         sprintf(statisticName, "queuingTimeInterval:%d", i);
 
-        ev->addResultRecorders(this, conditionalQueuingTimeSignals[i], statisticName, statisticTemplate);
+        ev->addResultRecorders(this, conditionalQueuingTimeSignals.at(i), statisticName, statisticTemplate);
+        //ev->addResultRecorders(this, conditionalQueuingTimeSignals[i], statisticName, statisticTemplate);
     }
 }
 
@@ -80,6 +81,7 @@ void MG1::handleMessage(cMessage *msg)
             emit(generalQueuingTimeSignal, simTime() - msgInServer->getStartedQueuingAt() );
             // emit the conditionalQueuingTimeSignal on its related dx interval -> floor(MsgServiceTime/(L/nbIntervals)
             emit(conditionalQueuingTimeSignals.at(msgInServer->getDxIntervalIndex()), simTime() - msgInServer->getStartedQueuingAt() );
+            //emit(conditionalQueuingTimeSignals[msgInServer->getDxIntervalIndex()], simTime() - msgInServer->getStartedQueuingAt() );
 
             //start service
             startPacketService();

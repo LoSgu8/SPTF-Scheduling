@@ -25,6 +25,7 @@ class MG1 : public cSimpleModule
         simsignal_t queueLengthSignal;
         simsignal_t generalQueuingTimeSignal;
         std::vector<simsignal_t> conditionalQueuingTimeSignals; // it will have nbIntervals elements
+        //simsignal_t conditionalQueuingTimeSignals[5000];
         simsignal_t utilizationFactorSignal;
         simsignal_t responseTimeSignal;
 

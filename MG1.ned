@@ -15,10 +15,10 @@ simple MG1
         @signal[responseTime](type=simtime_t);
         
         @statistic[queueLength](title="Queue length over time";record=vector,timeavg,max;interpolationmode=sample-hold);
-        @statistic[generalQueuingTime](title="General queuing time";record=timeavg);
+        @statistic[generalQueuingTime](title="General queuing time";record=mean);
         @statistic[utilizationFactor](title="Utilization Factor of the server";record=vector,timeavg;interpolationmode=sample-hold);
-        @statistic[responseTime](title="Response Time";record=timeavg);
-        @statisticTemplate[conditionalQueuingTimeTemplate](title="Conditional queuing time template of class $namePart1";record=timeavg,max);
+        @statistic[responseTime](title="Response Time";record=mean);
+        @statisticTemplate[conditionalQueuingTimeTemplate](title="Conditional queuing time template of class $namePart1";record=mean,max);
     
     gates:
         input in;
