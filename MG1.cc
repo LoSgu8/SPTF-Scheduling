@@ -62,7 +62,7 @@ void MG1::handleMessage(cMessage *msg)
 
     // --- PACKET IN SERVER HAS BEEN PROCESSED ---
     if (msg->isSelfMessage()) {
-        EV << "Completed service of " << msgInServer->getName() << " with service time " << msgInServer->getMsgServiceTime() << endl;
+        EV << "[" << simTime() << "] Completed service of " << msgInServer->getName() << " with service time " << msgInServer->getMsgServiceTime() << " seconds." << endl;
         // STATISTICS
         //emit its response time
         emit(responseTimeSignal, simTime() - msgInServer->getStartedQueuingAt());
@@ -73,7 +73,7 @@ void MG1::handleMessage(cMessage *msg)
         // start next packet processing if queue not empty
         if (!queue.isEmpty()) {
             msgInServer = (ModifiedMessage *)queue.pop(); // take top of the queue msg and remove it from queue
-            EV << "Popped out " << msgInServer->getName() << " with service time " << msgInServer->getMsgServiceTime() << " after waiting in queue for "<< simTime() - msgInServer->getStartedQueuingAt()<< " seconds." << endl;
+            EV << "[" << simTime() << "] Popped out " << msgInServer->getName() << " with service time " << msgInServer->getMsgServiceTime() << " seconds after waiting in queue for "<< simTime() - msgInServer->getStartedQueuingAt()<< " seconds." << endl;
             // STATISTICS
             // the queue length has decreased
             emit(queueLengthSignal, queue.getLength());
@@ -145,15 +145,17 @@ void MG1::startPacketService()
     scheduleAt(simTime()+serviceTime, endOfServiceMsg);
 
     //log service start
-    EV << "Starting service of " << msgInServer->getName() << " with service time " << msgInServer->getMsgServiceTime() << " seconds." << endl;
+    EV << "[" << simTime() << "] Starting service of " << msgInServer->getName() << " with service time " << msgInServer->getMsgServiceTime() << " seconds." << endl;
 }
 
 // This is where the SPTF policy is implemented, the queue is sorted by packet priority. Once the server finishes the service,
 // it will pop from the queue the packet with lowest service time
 void MG1::putPacketInQueue(ModifiedMessage *msg) {
+    // cast the received cMessage into a ModifiedMessage
+    msg = check_and_cast<ModifiedMessage *>(msg);
     queue.insert(msg); // since the compareFunc has already been binded to the queue, the insertion will be sorted according to the message class
     //log new message in queue
-    EV << msg->getName() << " with service time " << msgInServer->getMsgServiceTime() << " enters queue" << endl;
+    EV << "[" << simTime() << "]" << msg->getName() << " with service time " << msg->getMsgServiceTime() << " seconds enters queue." << endl;
 }
 
 // compareFunc used to define queue,

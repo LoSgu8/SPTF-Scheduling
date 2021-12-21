@@ -18,7 +18,7 @@ simple MG1
         @statistic[generalQueuingTime](title="General queuing time";record=mean);
         @statistic[utilizationFactor](title="Utilization Factor of the server";record=vector,timeavg;interpolationmode=sample-hold);
         @statistic[responseTime](title="Response Time";record=mean);
-        @statisticTemplate[conditionalQueuingTimeTemplate](title="Conditional queuing time template of class $namePart1";record=mean,max);
+        @statisticTemplate[conditionalQueuingTimeTemplate](title="Conditional queuing time template of class $namePart1";record=mean);
     
     gates:
         input in;
