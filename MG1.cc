@@ -124,6 +124,7 @@ void MG1::handleMessage(cMessage *msg)
             // STATITISTICS
             // emit the generalQueuingTime signal (SIMTIME_ZERO)
             emit(generalQueuingTimeSignal, SIMTIME_ZERO);
+            
             // emit UtilizationFactor signal
             emit(utilizationFactorSignal, totalActiveServerTime / simTime());
             // update the startTimeForRho value, store the time at which the server becomes busy
@@ -132,6 +133,9 @@ void MG1::handleMessage(cMessage *msg)
             // server idle --> server busy
             // The packet just received becomes the msgInServer packet and starts its service
             msgInServer = castedmsg;
+            // emit the condtionalQueuingTimeSignal equal to SIMTIME_ZERO
+            emit(conditionalQueuingTimeSignals.at(msgInServer->getDxIntervalIndex()), SIMTIME_ZERO);
+            
             startPacketService();
         }
     }
