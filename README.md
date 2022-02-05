@@ -16,3 +16,5 @@ Compare experimental and	theoretical values of:
 - Utilization factor of	the	server
 
 Statistics .csv file can be found on results/ folder.
+
+The results can be found in 'SPTF Scheduling Comparison.pdf' file.
