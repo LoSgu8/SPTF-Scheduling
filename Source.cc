@@ -21,7 +21,8 @@ void Source::initialize()
 
     avgInterArrivalTime = par("avgInterArrivalTime").doubleValue();
 
-    // send the first msg according the lambda parameter
+    //scheduleAt(simTime(), sendMessageEvent);
+    // send the first msg according the avgInterArrivalTime parameter
     scheduleAt(simTime()+exponential(avgInterArrivalTime), sendMessageEvent);
 }
 

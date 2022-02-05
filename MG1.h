@@ -20,8 +20,6 @@ class MG1 : public cSimpleModule
 
         int nbIntervals; // nb of dx intervals
 
-        std::default_random_engine generator;
-
         simsignal_t queueLengthSignal;
         simsignal_t generalQueuingTimeSignal;
         std::vector<simsignal_t> conditionalQueuingTimeSignals; // it will have nbIntervals elements
@@ -32,7 +30,7 @@ class MG1 : public cSimpleModule
         cQueue queue; // list of pkts in the queue
 
         // variables for UtilizactionFactor statistic
-        simtime_t startTimeForRho; // used to compute utilization factor values, store the time at which the server becomes busy or idle
+        simtime_t startTimeForRho; // used to compute utilization factor values, store the time at which the server becomes busy
         simtime_t totalActiveServerTime; // used to compute utilization factor values, store the total time the server is active (busy)
 
     public:

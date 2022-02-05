@@ -20,16 +20,15 @@ void MG1::initialize()
 {
     endOfServiceMsg = new cMessage("end-service");
     queue.setName("queue");
-    queue.setup(&compareFunc);
+    queue.setup(&compareFunc); // comment this line to get FCFS Scheduling Policy
+
+    totalActiveServerTime = SIMTIME_ZERO;
 
     // L parameter
     L = par("L").doubleValue();
 
     // L parameter
     nbIntervals = par("nbIntervals").intValue();
-
-    // uniform_real_distribution used to uniform distributed service times
-    std::uniform_real_distribution<double> distribution(0.0, L);
 
     //signal registering
     queueLengthSignal = registerSignal("queueLength");
@@ -47,12 +46,10 @@ void MG1::initialize()
     for (i=0; i<nbIntervals; i++) {
         sprintf(signalName, "queuingTimeInterval:%d", i);
         conditionalQueuingTimeSignals.push_back(registerSignal(signalName));
-        //conditionalQueuingTimeSignals[i] = registerSignal(signalName);
 
         sprintf(statisticName, "queuingTimeInterval:%d", i);
 
         ev->addResultRecorders(this, conditionalQueuingTimeSignals.at(i), statisticName, statisticTemplate);
-        //ev->addResultRecorders(this, conditionalQueuingTimeSignals[i], statisticName, statisticTemplate);
     }
 }
 
@@ -79,9 +76,7 @@ void MG1::handleMessage(cMessage *msg)
             emit(queueLengthSignal, queue.getLength());
             // emit the generalQueuingTimeSignal
             emit(generalQueuingTimeSignal, simTime() - msgInServer->getStartedQueuingAt() );
-            // emit the conditionalQueuingTimeSignal on its related dx interval -> floor(MsgServiceTime/(L/nbIntervals)
             emit(conditionalQueuingTimeSignals.at(msgInServer->getDxIntervalIndex()), simTime() - msgInServer->getStartedQueuingAt() );
-            //emit(conditionalQueuingTimeSignals[msgInServer->getDxIntervalIndex()], simTime() - msgInServer->getStartedQueuingAt() );
 
             //start service
             startPacketService();
@@ -92,8 +87,8 @@ void MG1::handleMessage(cMessage *msg)
             // STATISTICS
             // update the totalActiveServerTime value, adding to the previous value the time elapsed from the time the server became busy
             totalActiveServerTime = totalActiveServerTime + (simTime() - startTimeForRho);
-            // update the startTimeForRho value, store the time at which the server becomes idle
-            startTimeForRho = simTime();
+            // update the startTimeForRho value
+            startTimeForRho = SIMTIME_ZERO;
             // emit UtilizationFactor signal
             emit(utilizationFactorSignal, totalActiveServerTime / simTime());
 
@@ -107,8 +102,7 @@ void MG1::handleMessage(cMessage *msg)
 
         // Fill all its fields
         // Generate and assign the Service Time to the message using a uniform distribution generator [0, L]
-        std::uniform_real_distribution<double> distribution(0.0, L);
-        castedmsg->setMsgServiceTime(distribution(generator));
+        castedmsg->setMsgServiceTime(uniform(0,L));
         // Assign the actual time to startedQueuingAt field of the message (since send time and MG1receive->queue time are 0)
         castedmsg->setStartedQueuingAt(simTime());
         // Assign the dxIntervalIndex field to the message according to its service time
@@ -124,18 +118,18 @@ void MG1::handleMessage(cMessage *msg)
             // STATITISTICS
             // emit the generalQueuingTime signal (SIMTIME_ZERO)
             emit(generalQueuingTimeSignal, SIMTIME_ZERO);
-            
             // emit UtilizationFactor signal
             emit(utilizationFactorSignal, totalActiveServerTime / simTime());
+            // emit conditionalQueuingTime
+            emit(conditionalQueuingTimeSignals.at(castedmsg->getDxIntervalIndex()), SIMTIME_ZERO );
             // update the startTimeForRho value, store the time at which the server becomes busy
             startTimeForRho = simTime();
 
             // server idle --> server busy
             // The packet just received becomes the msgInServer packet and starts its service
             msgInServer = castedmsg;
-            // emit the condtionalQueuingTimeSignal equal to SIMTIME_ZERO
-            emit(conditionalQueuingTimeSignals.at(msgInServer->getDxIntervalIndex()), SIMTIME_ZERO);
-            
+
+
             startPacketService();
         }
     }
@@ -162,7 +156,8 @@ void MG1::putPacketInQueue(ModifiedMessage *msg) {
     EV << "[" << simTime() << "]" << msg->getName() << " with service time " << msg->getMsgServiceTime() << " seconds enters queue." << endl;
 }
 
-// compareFunc used to define queue,
+
+// --- compareFunc used to define queue, ---
 // see https://doc.omnetpp.org/omnetpp/api/group__Containers.html#gabeb451b66385c18e01063cb0576ea8a0 and https://doc.omnetpp.org/omnetpp/api/classomnetpp_1_1cQueue.html#a7eae56a84f7da30c84a4b68a96783577
 int MG1::compareFunc(cObject *a, cObject *b){
     ModifiedMessage* castedA = check_and_cast<ModifiedMessage *>(a);
