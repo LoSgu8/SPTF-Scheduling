@@ -17,4 +17,4 @@ Compare experimental and	theoretical values of:
 
 Statistics .csv file can be found on results/ folder.
 
-The results can be found in 'SPTF Scheduling Comparison.pdf' file.
+The final results can be found in "SPTF Scheduling Comparison.pdf" file obtained by analyzing .csv files with a Python Notebook (SPTF Scheduling Comparison.ipynb).
